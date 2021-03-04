@@ -36,7 +36,7 @@ else:
 
     '''
     # Simple solution without numpy
-    # get mean, std values directly from pandas dataframe
+    # get mean and stddev values directly from pandas dataframe
     data_means = df.mean().values
     data_stds  = df.std().values
     '''

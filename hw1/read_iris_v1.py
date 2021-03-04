@@ -10,23 +10,14 @@ import pandas as pd
 
 if len(sys.argv) < 2:
     print('usage: ' + sys.argv[0] + ' text_file_name')
+    
 else:
-    # determine delimieter based on file extension - may be used by pandas
-    # this is just to show how to use command line arguments. 
-    # any modification is accepted depending on your implementation.
+    # determine delimieter based on file extension
     if sys.argv[1][-3:].lower() == 'csv': delimeter = ','
     else: delimeter = '[ \t\n\r]'  # default is all white spaces 
 
     # read CSV/Text file with pandas
     df = pd.read_csv(sys.argv[1],sep=delimeter,engine='python')
-
-    ##############################################################
-    # WRITE YOUR OWN CODE LINES
-    # - read header line
-    # - read data and class labels
-    # - compute mean and standard deviation
-    # - disply them 
-    ##############################################################
 
     # read header line
     col_names = df.columns.values.tolist()

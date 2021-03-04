@@ -4,33 +4,21 @@
 # Platform: Python 3.7.4 on Ubuntu Linux 18.04
 # Required Package(s): sys numpy=1.19.2
 
-##############################################################
-# NOTE: import sys and numpy only. 
-# No other packages are allowed to be imported
-##############################################################
 import sys
 import numpy as np
 
 if len(sys.argv) < 2:
     print('usage: ' + sys.argv[0] + ' text_file_name')
-else:
-    ##############################################################
-    # WRITE YOUR OWN CODE LINES
-    # - open the input file, without pandas or csv packages
-    # - read header line
-    # - read data and class labels
-    # - compute mean and standard deviation
-    # - disply them 
-    ##############################################################
     
-    # define delimeter according to the file format
+else:
+    # determine delimieter based on file extension
     if sys.argv[1][-3:].lower() == 'csv': delimeter = ','
     else: delimeter = '\t'
     
     # create empty list (to make ndarray)
     data_list = []
 
-    # open and read file
+    # read CSV/Text file
     f = open(sys.argv[1], 'r')
     while True:
         # read one line

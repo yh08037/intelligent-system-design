@@ -28,3 +28,4 @@ else:
     # - compute mean and standard deviation
     # - disply them 
     ##############################################################
+    pass

@@ -1,4 +1,4 @@
-# ID: 2018115809
+# ID: 2018115809 (undergraduate)
 # NAME: Dohun Kim
 # File name: read_iris_v1.py
 # Platform: Python 3.7.4 on Ubuntu Linux 18.04

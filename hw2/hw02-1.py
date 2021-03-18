@@ -2,7 +2,7 @@
 # NAME: Dohun Kim
 # File name: hw02-1.py
 # Platform: Python 3.7.4 on Ubuntu Linux 18.04
-# Required Package(s): sys numpy=1.19.2 pandas=1.2.3 
+# Required Package(s): numpy=1.19.2 pandas=1.2.3 
 #                      matplotlib=3.3.4 scikit-learn=0.24.1
 
 '''

@@ -15,6 +15,7 @@ hw03-1.py :
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPClassifier
+from matplotlib.offsetbox import AnchoredText
 
 import warnings
 from sklearn.exceptions import ConvergenceWarning
@@ -62,77 +63,61 @@ x_test  = x_test  / 255.
 
 ##################################### train model ####################################
 
-def generate_batch(x: np.array, y: np.array, batch_size):
-    assert x.shape[0] == y.shape[0]
+# hidden layer size: obtained by brute-force search from 1 to 1000
+hidden_layer_size = 645
 
-    for idx in range(0, x.shape[0], batch_size):
-        yield x[idx:idx+batch_size], y[idx:idx+batch_size]
+# create MLP model object
+mlp = MLPClassifier(hidden_layer_sizes=(hidden_layer_size,), max_iter=10, alpha=1e-4,
+                    solver='sgd', verbose=True, random_state=1,
+                    learning_rate_init=0.1)
+
+# train MLP model and ignore convergence warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=ConvergenceWarning,
+                            module="sklearn")
+    mlp.fit(x_train, y_train)
 
 
-best_test_acc = 0
-best_hidden_layer_size = 1
-hidden_layer_size = 1
+##################################### test model #####################################
 
-while hidden_layer_size <= 1000:
+# get final score of trained MLP model in percent
+train_score = mlp.score(x_train, y_train) * 100
+test_score  = mlp.score(x_test, y_test) * 100
 
-    print('============== hidden layer size : %d ==============' %(hidden_layer_size))
+# plot training loss over 10 epochs
+plt.plot(mlp.loss_curve_, alpha=0.8, label='training loss')
+plt.title("Training Loss over epochs", fontsize=14)
+plt.xlabel('Epochs')
 
-    mlp = MLPClassifier(hidden_layer_sizes=(hidden_layer_size,), max_iter=10, alpha=1e-4,
-                        solver='sgd', verbose=False, random_state=1,
-                        learning_rate_init=0.1)
+# add test accuract in learning curve plot
+score_string = 'train score : %.2f%%\ntest score : %.2f%%' %(train_score, test_score)
+anchored_text = AnchoredText(score_string, loc='upper right')
+plt.gca().add_artist(anchored_text)
 
-    # N_EPOCHS = 10
-    # BATCH_SIZE = 200
-    # CLASSES = np.unique(y_train)
+plt.show()
 
-    # train_scores = []
-    # test_scores  = []
 
-    # epoch = 0
-    # while epoch < N_EPOCHS:
-    #     for x, y in generate_batch(x_train, y_train, BATCH_SIZE):
-    #         mlp.partial_fit(x, y, CLASSES)
+################################ plot example filters ################################
 
-    #     train_score = mlp.score(x_train, y_train)
-    #     test_score  = mlp.score(x_test, y_test)
-        
-    #     train_scores.append(train_score)
-    #     test_scores.append(test_score)
+# define row, column number of subplot
+row, col = 5, 5
 
-    #     print("epoch %d: train score = %f, test score = %f" %(epoch, train_score, test_score))
-        
-    #     epoch += 1
+# get weights of 0th hidden layer
+coefs = mlp.coefs_[0].T
 
-    # this example won't converge because of CI's time constraints, so we catch the
-    # warning and are ignore it here
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=ConvergenceWarning,
-                                module="sklearn")
-        mlp.fit(x_train, y_train)
+# get index of 25 filters which have highest stddev values
+coef_std = coefs.std(axis=1)
+idx = np.argsort(coef_std)[-row*col:]
 
-    train_score = mlp.score(x_train, y_train)
-    test_score  = mlp.score(x_test, y_test)
+# use global min / max to ensure all weights are shown on the same scale
+coef_min, coef_max = coefs.min(), coefs.max()
 
-    print('train score = %f, test score = %f' %(train_score, test_score))
-    
-    f = open('./score.log', 'a')
-    f.write('%d,%f,%f\n' %(hidden_layer_size, train_score, test_score))
-    f.close()
+fig, axes = plt.subplots(row, col)
 
-    if test_score > best_test_acc:
-        best_test_acc = test_score
-        best_hidden_layer_size = hidden_layer_size
+for coef, ax in zip(coefs[idx], axes.ravel()):
+    ax.matshow(coef.reshape(28, 28), cmap=plt.cm.gray, 
+               vmin=coef_min*0.5, vmax=coef_max*0.5)
+    ax.set_xticks(())
+    ax.set_yticks(())
 
-    hidden_layer_size += 1
-
-    print()
-
-print('best hidden layer size: %d' %(best_hidden_layer_size))
-print('best test accuracy: %f' %(best_test_acc))
-
-# plt.plot(train_scores, alpha=0.8, label='Train')
-# plt.plot(test_scores, alpha=0.8, label='Test')
-# plt.title("Accuracy over epochs", fontsize=14)
-# plt.xlabel('Epochs')
-# plt.legend(loc='upper left')
-# plt.show()
+plt.show()

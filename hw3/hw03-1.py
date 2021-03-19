@@ -16,6 +16,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPClassifier
 
+import warnings
+from sklearn.exceptions import ConvergenceWarning
+
 
 ############################# define data loader function ############################
 
@@ -71,39 +74,60 @@ best_hidden_layer_size = 1
 hidden_layer_size = 1
 
 while hidden_layer_size <= 1000:
-    mlp = MLPClassifier(hidden_layer_sizes=(500,), max_iter=10, alpha=1e-4,
+
+    print('============== hidden layer size : %d ==============' %(hidden_layer_size))
+
+    mlp = MLPClassifier(hidden_layer_sizes=(hidden_layer_size,), max_iter=10, alpha=1e-4,
                         solver='sgd', verbose=False, random_state=1,
                         learning_rate_init=0.1)
 
-    N_EPOCHS = 10
-    BATCH_SIZE = 200
-    CLASSES = np.unique(y_train)
+    # N_EPOCHS = 10
+    # BATCH_SIZE = 200
+    # CLASSES = np.unique(y_train)
 
-    train_scores = []
-    test_scores  = []
+    # train_scores = []
+    # test_scores  = []
 
-    epoch = 0
-    while epoch < N_EPOCHS:
-        for x, y in generate_batch(x_train, y_train, BATCH_SIZE):
-            mlp.partial_fit(x, y, CLASSES)
+    # epoch = 0
+    # while epoch < N_EPOCHS:
+    #     for x, y in generate_batch(x_train, y_train, BATCH_SIZE):
+    #         mlp.partial_fit(x, y, CLASSES)
 
-        train_score = mlp.score(x_train, y_train)
-        test_score  = mlp.score(x_test, y_test)
+    #     train_score = mlp.score(x_train, y_train)
+    #     test_score  = mlp.score(x_test, y_test)
         
-        train_scores.append(train_score)
-        test_scores.append(test_score)
+    #     train_scores.append(train_score)
+    #     test_scores.append(test_score)
 
-        print("epoch %d: train score = %f, test score = %f" %(epoch, train_score, test_score))
+    #     print("epoch %d: train score = %f, test score = %f" %(epoch, train_score, test_score))
         
-        epoch += 1
+    #     epoch += 1
+
+    # this example won't converge because of CI's time constraints, so we catch the
+    # warning and are ignore it here
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=ConvergenceWarning,
+                                module="sklearn")
+        mlp.fit(x_train, y_train)
+
+    train_score = mlp.score(x_train, y_train)
+    test_score  = mlp.score(x_test, y_test)
+
+    print('train score = %f, test score = %f' %(train_score, test_score))
     
-    if test_score[-1] > best_test_acc:
-        best_test_acc = test_score[-1]
+    f = open('./score.log', 'a')
+    f.write('%d,%f,%f\n' %(hidden_layer_size, train_score, test_score))
+    f.close()
+
+    if test_score > best_test_acc:
+        best_test_acc = test_score
         best_hidden_layer_size = hidden_layer_size
 
     hidden_layer_size += 1
 
-print('best hidden layer size: %d' %(hidden_layer_size))
+    print()
+
+print('best hidden layer size: %d' %(best_hidden_layer_size))
 print('best test accuracy: %f' %(best_test_acc))
 
 # plt.plot(train_scores, alpha=0.8, label='Train')

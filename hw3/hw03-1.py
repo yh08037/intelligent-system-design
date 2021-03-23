@@ -112,6 +112,7 @@ idx = np.argsort(coef_std)[-row*col:]
 # use global min / max to ensure all weights are shown on the same scale
 coef_min, coef_max = coefs.min(), coefs.max()
 
+# plot example filters
 fig, axes = plt.subplots(row, col)
 
 for coef, ax in zip(coefs[idx], axes.ravel()):
@@ -120,4 +121,5 @@ for coef, ax in zip(coefs[idx], axes.ravel()):
     ax.set_xticks(())
     ax.set_yticks(())
 
+plt.suptitle('Plotting example filters')
 plt.show()

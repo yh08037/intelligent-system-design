@@ -19,39 +19,36 @@ from sklearn.datasets import load_digits
 from two_layer_net import TwoLayerNet
 
 
-############################# define data loader function ############################
-
-def load_fashion_mnist(path, kind='train'):
-    '''
-    original code is found at:
-    https://github.com/zalandoresearch/fashion-mnist/blob/master/utils/mnist_reader.py
-    '''
-    import os
-    import gzip
-
-    """Load Fashion MNIST data from `path`"""
-    labels_path = os.path.join(path, '%s-labels-idx1-ubyte.gz' % kind)
-    images_path = os.path.join(path, '%s-images-idx3-ubyte.gz' % kind)
-
-    with gzip.open(labels_path, 'rb') as lbpath:
-        labels = np.frombuffer(lbpath.read(), dtype=np.uint8, offset=8)
-
-    with gzip.open(images_path, 'rb') as imgpath:
-        images = np.frombuffer(imgpath.read(), dtype=np.uint8,
-                               offset=16).reshape(len(labels), 784)
-
-    return images, labels
-
-
 ################################### preparing data ###################################
 
 # load data from gzip files
-x_train, t_train = load_fashion_mnist('./', 'train')
-x_test,  t_test  = load_fashion_mnist('./', 't10k')
+x, t = load_digits(return_X_y=True)
 
 # normalization of input data
-x_train = x_train / 255.
-x_test  = x_test  / 255.
+x = x / x.max()
+
+# split dataset into training(80%) and test(20%) sets
+train_rate = 0.8
+num_label = np.unique(t, axis=0).shape[0]
+
+train_idx, test_idx = [], []
+
+for i in range(num_label):
+    all_idx = list(np.where(t == i)[0])
+    num_train = int(len(all_idx) * train_rate)
+
+    train_idx += all_idx[:num_train]
+    test_idx  += all_idx[num_train:]
+
+x_train, t_train = x[train_idx], t[train_idx]
+x_test,  t_test  = x[test_idx],  t[test_idx]
+
+# check the proportion of the result data
+print('label train   test')
+for i in range(num_label):
+    a = len(t_train[t_train==i])
+    b = len(t_test[t_test==i])
+    print('  %1d   %3.2f%%  %2.2f%%' %(i, a/(a+b)*100, b/(a+b)*100))
 
 # one-hot encoding
 num_label = np.unique(t_train, axis=0).shape[0]
@@ -61,9 +58,9 @@ t_test  = np.eye(num_label)[t_test]
 
 ################################# train and test model ################################
 
-network = TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
+network = TwoLayerNet(input_size=64, hidden_size=50, output_size=10)
 
-iters_num = 10000
+iters_num = 500
 train_size = x_train.shape[0]
 batch_size = 100
 learning_rate = 0.1
@@ -72,7 +69,9 @@ train_loss_list = []
 train_acc_list = []
 test_acc_list = []
 
-iter_per_epoch = max(train_size / batch_size, 1)
+iter_per_epoch = max(int(train_size / batch_size), 1)
+
+print(len(x), iter_per_epoch)
 
 for i in range(iters_num):
     batch_mask = np.random.choice(train_size, batch_size)
@@ -95,4 +94,4 @@ for i in range(iters_num):
         test_acc = network.accuracy(x_test, t_test)
         train_acc_list.append(train_acc)
         test_acc_list.append(test_acc)
-        print('iter %-5d   train_acc: %2.2f%%   test_acc: %2.2f%%' %(i, train_acc*100, test_acc*100))
+        print('iter %-5d\ttrain_acc: %-3.2f%%\ttest_acc: %-3.2f%%' %(i, train_acc*100, test_acc*100))

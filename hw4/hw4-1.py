@@ -71,7 +71,7 @@ train_loss_list = []
 train_acc_list = []
 test_acc_list = []
 
-iter_per_epoch = max(train_size / batch_size, 1)
+iter_per_epoch = max(int(train_size / batch_size), 1)
 
 for i in range(iters_num):
     batch_mask = np.random.choice(train_size, batch_size)
@@ -94,4 +94,4 @@ for i in range(iters_num):
         test_acc = network.accuracy(x_test, t_test)
         train_acc_list.append(train_acc)
         test_acc_list.append(test_acc)
-        print('iter %-5d   train_acc: %2.2f%%   test_acc: %2.2f%%' %(i, train_acc*100, test_acc*100))
+        print('iter %-5d\ttrain_acc: %-3.2f%%\ttest_acc: %-3.2f%%' %(i, train_acc*100, test_acc*100))

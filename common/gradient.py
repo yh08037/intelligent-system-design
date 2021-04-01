@@ -1,3 +1,4 @@
+# coding: utf-8
 import numpy as np
 
 def _numerical_gradient_1d(f, x):
@@ -47,4 +48,5 @@ def numerical_gradient(f, x):
         
         x[idx] = tmp_val # 값 복원
         it.iternext()   
+        
     return grad

@@ -2,7 +2,7 @@
 # NAME: Dohun Kim
 # File name: hw4-2.py
 # Platform: Python 3.7.4 on Ubuntu Linux 18.04
-# Required Package(s): sys, os, numpy=1.19.2 scikit-learn=0.24.1
+# Required Package(s): sys, os, numpy=1.19.2, scikit-learn=0.24.1
 #                      matplotlib=3.3.4
 
 '''
@@ -30,14 +30,21 @@ x, t = load_digits(return_X_y=True)
 # normalization of input data
 x = x / x.max()
 
+# shuffle data randomly
+rand_idx = np.arange(len(x))
+np.random.shuffle(rand_idx)
+
+x = x[rand_idx]
+t = t[rand_idx]
+
 # split dataset into training(80%) and test(20%) sets
 train_rate = 0.8
-num_label = np.unique(t, axis=0).shape[0]
+labels = np.unique(t, axis=0).tolist()
 
 train_idx, test_idx = [], []
 
-for i in range(num_label):
-    all_idx = list(np.where(t == i)[0])
+for label in labels:
+    all_idx = list(np.where(t == label)[0])
     num_train = int(len(all_idx) * train_rate)
 
     train_idx += all_idx[:num_train]
@@ -49,15 +56,14 @@ x_test,  t_test  = x[test_idx],  t[test_idx]
 # check the proportion of the result data
 print('== check stratified splits ==')
 print('label   train     test')
-for i in range(num_label):
-    a = len(t_train[t_train==i])
-    b = len(t_test[t_test==i])
-    print('  %1d     %3.2f%%    %2.2f%%' %(i, a/(a+b)*100, b/(a+b)*100))
+for label in labels:
+    a = len(t_train[t_train==label])
+    b = len(t_test[t_test==label])
+    print('  %1d     %3.2f%%    %2.2f%%' %(label, a/(a+b)*100, b/(a+b)*100))
 print('=============================')
 
-
 # one-hot encoding
-num_label = np.unique(t_train, axis=0).shape[0]
+num_label = len(labels)
 t_train = np.eye(num_label)[t_train]
 t_test  = np.eye(num_label)[t_test]
 

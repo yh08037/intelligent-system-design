@@ -1,12 +1,12 @@
 # ID: 2018115809 (undergraduate)
 # NAME: Dohun Kim
-# File name: hw4-1.py
+# File name: hw4-3.py
 # Platform: Python 3.7.4 on Ubuntu Linux 18.04
-# Required Package(s): sys, os, gzip, numpy=1.19.2, matplotlib=3.3.4
+# Required Package(s): sys, os, numpy=1.19.2, pandas=1.2.3, matplotlib=3.3.4
 
 '''
-hw4-1.py :
-    classification of Fashion MNIST dataset with `TwoLayerNet`
+hw4-3.py :
+    classification of wine dataset with `TwoLayerNet`
 '''
 
 ############################## import required packages ##############################
@@ -15,59 +15,75 @@ import sys, os
 sys.path.append(os.pardir)
 
 import numpy as np
+import pandas as pd
 from two_layer_net import TwoLayerNet
 
 import matplotlib.pyplot as plt
 
 
-############################# define data loader function ############################
-
-def load_fashion_mnist(path, kind='train'):
-    '''
-    original code is found at:
-    https://github.com/zalandoresearch/fashion-mnist/blob/master/utils/mnist_reader.py
-    '''
-    import os
-    import gzip
-
-    """Load Fashion MNIST data from `path`"""
-    labels_path = os.path.join(path, '%s-labels-idx1-ubyte.gz' % kind)
-    images_path = os.path.join(path, '%s-images-idx3-ubyte.gz' % kind)
-
-    with gzip.open(labels_path, 'rb') as lbpath:
-        labels = np.frombuffer(lbpath.read(), dtype=np.uint8, offset=8)
-
-    with gzip.open(images_path, 'rb') as imgpath:
-        images = np.frombuffer(imgpath.read(), dtype=np.uint8,
-                               offset=16).reshape(len(labels), 784)
-
-    return images, labels
-
-
 ################################### preparing data ###################################
 
-# load data from gzip files
-x_train, t_train = load_fashion_mnist('./', 'train')
-x_test,  t_test  = load_fashion_mnist('./', 't10k')
+# load data from csv file
+if len(sys.argv) < 2:
+    print('usage: ' + sys.argv[0] + ' text_file_name')
+    exit()
+    
+df = pd.read_csv(sys.argv[1])
+
+x = df.drop('class', axis=1).values
+t = df['class'].values - 1
+
+del df
 
 # normalization of input data
-x_train = x_train / 255.
-x_test  = x_test  / 255.
+x = x / x.max(axis=0)
+
+# shuffle data randomly
+rand_idx = np.arange(len(x))
+np.random.shuffle(rand_idx)
+
+x = x[rand_idx]
+t = t[rand_idx]
+
+# split dataset into training(80%) and test(20%) sets
+train_rate = 0.8
+labels = np.unique(t, axis=0).tolist()
+
+train_idx, test_idx = [], []
+
+for label in labels:
+    all_idx = list(np.where(t == label)[0])
+    num_train = int(len(all_idx) * train_rate)
+
+    train_idx += all_idx[:num_train]
+    test_idx  += all_idx[num_train:]
+
+x_train, t_train = x[train_idx], t[train_idx]
+x_test,  t_test  = x[test_idx],  t[test_idx]
+
+# check the proportion of the result data
+print('== check stratified splits ==')
+print('label   train     test')
+for label in labels:
+    a = len(t_train[t_train==label])
+    b = len(t_test[t_test==label])
+    print('  %1d     %3.2f%%    %2.2f%%' %(label, a/(a+b)*100, b/(a+b)*100))
+print('=============================')
 
 # one-hot encoding
-num_label = np.unique(t_train, axis=0).shape[0]
+num_label = len(labels)
 t_train = np.eye(num_label)[t_train]
 t_test  = np.eye(num_label)[t_test]
 
 
 ################################# train and test model ################################
 
-network = TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
+network = TwoLayerNet(input_size=13, hidden_size=30, output_size=3)
 
-iters_num = 3000
+iters_num = 300
 train_size = x_train.shape[0]
-batch_size = 256
-learning_rate = 0.1
+batch_size = 32
+learning_rate = 0.2
 
 iter_per_epoch = max(int(train_size / batch_size), 1)
 
@@ -98,7 +114,7 @@ for i in range(iters_num):
         
         train_acc_list.append(train_acc)
         test_acc_list.append(test_acc)
-
+        
         print('iter %-5d\ttrain_acc: %-3.2f%%\ttest_acc: %-3.2f%%' 
               %(i, train_acc*100, test_acc*100))
 

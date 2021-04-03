@@ -2,7 +2,7 @@
 # NAME: Dohun Kim
 # File name: hw4-1.py
 # Platform: Python 3.7.4 on Ubuntu Linux 18.04
-# Required Package(s): sys, os, gzip, numpy=1.19.2
+# Required Package(s): sys, os, gzip, numpy=1.19.2, matplotlib=3.3.4
 
 '''
 hw4-1.py :
@@ -16,6 +16,8 @@ sys.path.append(os.pardir)
 
 import numpy as np
 from two_layer_net import TwoLayerNet
+
+import matplotlib.pyplot as plt
 
 
 ############################# define data loader function ############################
@@ -67,11 +69,12 @@ train_size = x_train.shape[0]
 batch_size = 100
 learning_rate = 0.1
 
+iter_per_epoch = max(int(train_size / batch_size), 1)
+
 train_loss_list = []
 train_acc_list = []
 test_acc_list = []
 
-iter_per_epoch = max(int(train_size / batch_size), 1)
 
 for i in range(iters_num):
     batch_mask = np.random.choice(train_size, batch_size)
@@ -92,6 +95,20 @@ for i in range(iters_num):
     if i % iter_per_epoch == 0:
         train_acc = network.accuracy(x_train, t_train)
         test_acc = network.accuracy(x_test, t_test)
+        
         train_acc_list.append(train_acc)
         test_acc_list.append(test_acc)
-        print('iter %-5d\ttrain_acc: %-3.2f%%\ttest_acc: %-3.2f%%' %(i, train_acc*100, test_acc*100))
+
+        print('iter %-5d\ttrain_acc: %-3.2f%%\ttest_acc: %-3.2f%%' 
+              %(i, train_acc*100, test_acc*100))
+
+
+################################# plot learning curve #################################
+
+plt.title('Accuracy - Train vs Test')
+plt.plot(train_acc_list, label='train accuracy')
+plt.plot(test_acc_list, label='test_accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()

@@ -34,6 +34,9 @@ from common.util import shuffle_dataset
 ################################## define functions ##################################
 
 def weakness_of_sgd():
+    
+    '''6.1.3 SGD의 단점'''
+
     X = np.arange(-10, 10, 0.5)
     Y = np.arange(-10, 10, 0.5)
     XX, YY = np.meshgrid(X, Y)
@@ -78,6 +81,8 @@ def weakness_of_sgd():
 
 
 def optimizer_compare_naive():
+
+    '''6.1.7 어느 갱신 방법을 이용할 것인가?'''
 
     def f(x, y):
         return x**2 / 20.0 + y**2
@@ -145,6 +150,8 @@ def optimizer_compare_naive():
 
 def optimizer_compare_real_data(data_loader):
 
+    '''6.1.8 MNIST 데이터셋으로 본 갱신 방법 비교'''
+
     # 0. MNIST 데이터 읽기==========
     (x_train, t_train), (x_test, t_test) = data_loader(normalize=True)
 
@@ -209,6 +216,8 @@ def optimizer_compare_real_data(data_loader):
 
 def weight_init_activation_histogram():
         
+    '''6.2.2 은닉층의 활성화값 분포'''
+
     def sigmoid(x):
         return 1 / (1 + np.exp(-x))
 
@@ -260,6 +269,8 @@ def weight_init_activation_histogram():
 
 
 def batch_norm_test(data_loader):
+
+    '''6.3.2 배치 정규화의 효과'''
 
     (x_train, t_train), (x_test, t_test) = data_loader(normalize=True)
 
@@ -351,6 +362,9 @@ def batch_norm_test(data_loader):
 
 
 def overfit_weight_decay(data_loader):
+
+    '''6.4.1 오버피팅'''
+
     (x_train, t_train), (x_test, t_test) = data_loader(normalize=True)
 
     # 오버피팅을 재현하기 위해 학습 데이터 수를 줄임
@@ -420,6 +434,9 @@ def overfit_weight_decay(data_loader):
 
 
 def overfit_dropout(data_loader):
+
+    '''6.4.3 드롭아웃'''
+
     (x_train, t_train), (x_test, t_test) = data_loader(normalize=True)
 
     # 오버피팅을 재현하기 위해 학습 데이터 수를 줄임
@@ -463,6 +480,9 @@ def overfit_dropout(data_loader):
 
 
 def hyperparameter_optimization(data_loader):
+
+    '''6.5.3 하이퍼파라미터 최적화 구현하기'''
+    
     (x_train, t_train), (x_test, t_test) = data_loader(normalize=True)
 
     # 결과를 빠르게 얻기 위해 훈련 데이터를 줄임

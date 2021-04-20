@@ -11,7 +11,6 @@ hw6.py :
 
 ############################## import required packages ##############################
 # coding: utf-8
-from types import DynamicClassAttribute
 import numpy as np
 import matplotlib.pyplot as plt
 import os, sys
@@ -384,7 +383,6 @@ def leave_one_out_cross_validation(data_loader):
 ######################################## main ########################################
 
 if __name__ == '__main__':
-
 
     funcs = [
         incorrect_holdout_split,

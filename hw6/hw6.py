@@ -11,6 +11,7 @@ hw6.py :
 
 ############################## import required packages ##############################
 # coding: utf-8
+from types import DynamicClassAttribute
 import numpy as np
 import matplotlib.pyplot as plt
 import os, sys
@@ -27,7 +28,7 @@ from common.layers import Affine, Relu, SoftmaxWithLoss
 from common.gradient import numerical_gradient
 
 
-################################## define functions ##################################
+#################################### define model ####################################
 
 class TwoLayerNet:
 
@@ -99,10 +100,9 @@ class TwoLayerNet:
         return grads
 
 
-
-def train_neuralnet_iris(x_train, t_train, x_test, t_test, 
+def train_neuralnet_data(x_train, t_train, x_test, t_test, 
                          input_size=64, hidden_size=50, output_size=10, 
-                         iters_num = 1000, batch_size = 64, learning_rate = 0.01,
+                         iters_num=1000, batch_size=64, learning_rate=0.01,
                          verbose=True):
     
     network = TwoLayerNet(input_size, hidden_size, output_size)
@@ -160,7 +160,6 @@ def train_neuralnet_iris(x_train, t_train, x_test, t_test,
     return history
 
 
-
 def plot_history(history, title):
 
     # plot learning curve by accuracy
@@ -188,80 +187,89 @@ def plot_history(history, title):
 
 
 
-def holdout_1(data_loader):
+################################## define functions ##################################
+
+def incorrect_holdout_split(data_loader):
 
     '''Incorrect Holdout Split'''
 
-    iris = data_loader()
-    
-    nsamples = iris.data.shape[0]
-    
-    ntestsamples = nsamples * 4 // 10  # `//' is integer division
-    ntrainsamples = nsamples - ntestsamples	  # 4:6 test:train split
+    X, y = data_loader(return_X_y=True)
 
-    testidx = range(0,ntestsamples)
-    trainidx = range(ntestsamples,nsamples)
+    idx = np.argsort(y)    # sort data by label value 
+    X, y = X[idx], y[idx]  # to do the same method as the example
 
-    history = train_neuralnet_iris(iris.data[trainidx,:], iris.target[trainidx],
-                                   iris.data[testidx], iris.target[testidx],
+    # 4:6 test:train split
+    nsamples = X.shape[0]
+    ntestsamples = int(nsamples * 0.4)
+
+    testidx  = range(0, ntestsamples)
+    trainidx = range(ntestsamples, nsamples)
+
+    history = train_neuralnet_data(X[trainidx,:], y[trainidx], X[testidx,:], y[testidx], 
                                    input_size=64, hidden_size=50, output_size=10, 
-                                   iters_num = 1000, batch_size = 64, learning_rate = 0.01,
-                                   verbose=False)
+                                   iters_num=1000, batch_size=64, learning_rate=0.01,
+                                   verbose=True)
 
     plot_history(history, 'Incorrect Holdout Split')    
 
 
-
-def holdout_2(data_loader):
+def per_class_holdout_split(data_loader):
 
     '''Per-class Holdout Split'''
 
-    iris = data_loader()
+    X, y = data_loader(return_X_y=True)
 
-    # 4:6 test:train split
-    ntestsamples = len(iris.target) * 4 // 10  # '//' integer division
-    ntestperclass = ntestsamples // 3
+    idx = np.argsort(y)    # sort data by label value 
+    X, y = X[idx], y[idx]  # to do the same method as the example
 
     # allocate indices for test and training data
-    # Bte: boolean index for test data;  ~Bte: logical not, for training data
-    Bte = np.zeros(len(iris.target),dtype=bool)   # initially, False index
+    # Bte: boolean index for test data
+    # ~Bte: logical not, for training data
+    nsamples = X.shape[0]
+    _, counts = np.unique(y, return_counts=True)
+    Bte = np.zeros(nsamples, dtype=bool)
     
-    for c in range(0,3): 
-        Bte[range(c*50,c*50+ntestperclass)] = True
-
-    history = train_neuralnet_iris(iris.data[~Bte,:], iris.target[~Bte],
-                                   iris.data[Bte,:], iris.target[Bte],
+    i = 0
+    for count in counts:
+        ntestsample = int(count * 0.4)
+        Bte[i:i+ntestsample] = True
+        i += count
+    
+    history = train_neuralnet_data(X[~Bte,:], y[~Bte], X[Bte,:], y[Bte],
                                    input_size=64, hidden_size=50, output_size=10, 
-                                   iters_num = 1000, batch_size = 64, learning_rate = 0.01,
-                                   verbose=False)
+                                   iters_num=1000, batch_size=64, learning_rate=0.01,
+                                   verbose=True)
     
     plot_history(history, 'Per-class Holdout Split')
 
 
-def holdout_3(data_loader):
+def random_sampling_holdout_split(data_loader):
 
     '''Holdout Split by Random Sampling'''
 
-    iris = data_loader()
+    X, y = data_loader(return_X_y=True)
 
-    nsamples = iris.data.shape[0]
-    ntestsamples = nsamples * 4 // 10  # 4:6 test:train split
+    idx = np.argsort(y)    # sort data by label value 
+    X, y = X[idx], y[idx]  # to do the same method as the example
+
+    # 4:6 test:train split
+    nsamples = X.shape[0]
+    ntestsamples = int(nsamples * 0.4)
 
     # random permutation (shuffling)
     Irand = np.random.permutation(nsamples)
-    Ite = Irand[range(0,ntestsamples)]
-    Itr = Irand[range(ntestsamples,nsamples)]
+    Ite = Irand[range(0, ntestsamples)]
+    Itr = Irand[range(ntestsamples, nsamples)]
 
-    history = train_neuralnet_iris(iris.data[Itr,:], iris.target[Itr],
-                                   iris.data[Ite,:], iris.target[Ite],
+    history = train_neuralnet_data(X[Itr,:], y[Itr], X[Ite,:], y[Ite],
                                    input_size=64, hidden_size=50, output_size=10, 
-                                   iters_num = 1000, batch_size = 64, learning_rate = 0.01,
-                                   verbose=False)
+                                   iters_num=1000, batch_size=64, learning_rate=0.01,
+                                   verbose=True)
 
-    plot_history(history, 'Holdout Split by Random Sampling')
+    plot_history(history, 'Hold out Split by Random Sampling')
 
 
-def holdout_4(data_loader):
+def sklearn_train_test_split(data_loader):
     
     '''sklearn.model_selection.train_test_split'''
 
@@ -270,10 +278,10 @@ def holdout_4(data_loader):
     X, y = data_loader(return_X_y=True)
     Xtr,Xte,ytr,yte = train_test_split(X, y, test_size=0.4, shuffle=True)
 
-    history = train_neuralnet_iris(Xtr,ytr,Xte,yte,
+    history = train_neuralnet_data(Xtr, ytr, Xte, yte,
                                    input_size=64, hidden_size=50, output_size=10, 
-                                   iters_num = 1000, batch_size = 64, learning_rate = 0.01,
-                                   verbose=False)
+                                   iters_num=1000, batch_size=64, learning_rate=0.01,
+                                   verbose=True)
 
     plot_history(history, 'sklearn.model_selection.train_test_split')
 
@@ -287,15 +295,15 @@ def holdout_4(data_loader):
     # to reproduce the same random sequence at every execution
     np.random.seed(len(y))
 
-    history = train_neuralnet_iris(Xtr,ytr,Xte,yte,
+    history = train_neuralnet_data(Xtr, ytr, Xte, yte,
                                    input_size=64, hidden_size=50, output_size=10, 
-                                   iters_num = 1000, batch_size = 64, learning_rate = 0.01,
-                                   verbose=False)
+                                   iters_num=1000, batch_size=64, learning_rate=0.01,
+                                   verbose=True)
     
     plot_history(history, 'Improving Random Samplig Holdout')
 
     
-def holdout_5(data_loader):
+def stratified_random_sampling(data_loader):
 
     '''Stratified Random Sampling'''
 
@@ -312,16 +320,15 @@ def holdout_5(data_loader):
     # so we have to set the random seed for TwoLayerNet's initialization values
     np.random.seed(len(y))
 
-    history = train_neuralnet_iris(Xtr,ytr,Xte,yte,
+    history = train_neuralnet_data(Xtr, ytr, Xte, yte,
                                    input_size=64, hidden_size=50, output_size=10, 
-                                   iters_num = 1000, batch_size = 64, learning_rate = 0.01,
-                                   verbose=False)
+                                   iters_num=1000, batch_size=64, learning_rate=0.01,
+                                   verbose=True)
 
     plot_history(history, 'Stratified Random Sampling')
 
 
-
-def crossval_1(data_loader):
+def repeated_random_subsampling(data_loader):
     
     '''Repeated Random Subsampling'''
     # Repeating stratified random sampling K times
@@ -339,10 +346,10 @@ def crossval_1(data_loader):
         # stratified random sampling
         Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.4, shuffle=True, random_state=None, stratify=y)
         
-        history = train_neuralnet_iris(Xtr,ytr,Xte,yte,
+        history = train_neuralnet_data(Xtr, ytr, Xte, yte,
                                        input_size=64, hidden_size=50, output_size=10, 
-                                       iters_num = 1000, batch_size = 64, learning_rate = 0.01, 
-                                       verbose = False)
+                                       iters_num=1000, batch_size=64, learning_rate=0.01, 
+                                       verbose =False)
         
         tracc = history['final_train_acc']
         teacc = history['final_test_acc']
@@ -350,23 +357,24 @@ def crossval_1(data_loader):
         print('Trial %d: accuracy %.3f %.3f' % (k, tracc, teacc))
 
 
-def crossval_2(data_loader):
+def leave_one_out_cross_validation(data_loader):
 
     '''LOO (leave-one-out) cross validation, k nearest neighbors on IRIS'''
     # LOO is useul for KNN, because no model training is required
 
-    iris = data_loader()
+    X, y = data_loader(return_X_y=True)
+
     for k in [1,3,5,7,9]:
         neigh = KNeighborsClassifier(n_neighbors=k)
-        I = np.ones(iris.target.shape,dtype=bool)   # True index array
-        y_pred = -np.ones(iris.target.shape,dtype=int)    # prediction, assigned -1 for initial values
-        for n in range(len(iris.target)):
+        I = np.ones(y.shape,dtype=bool)   # True index array
+        y_pred = -np.ones(y.shape,dtype=int)    # prediction, assigned -1 for initial values
+        for n in range(len(y)):
             I[n] = False    # unselect, leave one
-            y_pred[n] = neigh.fit(iris.data[I,:], iris.target[I]).predict(iris.data[n,:].reshape(1,-1))
+            y_pred[n] = neigh.fit(X[I,:], y[I]).predict(X[n,:].reshape(1,-1))
             I[n] = True     # select, for the next step
 
-        nsamples = iris.data.shape[0]
-        nmisses = (iris.target != y_pred).sum()
+        nsamples = X.shape[0]
+        nmisses = (y != y_pred).sum()
         print('kNN with k=%d' % k)
         print('Number of mislabeled out of a total %d samples : %d (%.2f%%)'
                 % (nsamples, nmisses, float(nmisses)/float(nsamples)*100.0))
@@ -377,22 +385,20 @@ def crossval_2(data_loader):
 
 if __name__ == '__main__':
 
+
     funcs = [
-        (holdout_1, True),
-        (holdout_2, True),
-        (holdout_3, True),
-        (holdout_4, True),
-        (holdout_5, True),
-        (crossval_1, True),
-        (crossval_2, True)
+        incorrect_holdout_split,
+        per_class_holdout_split,
+        random_sampling_holdout_split,
+        sklearn_train_test_split,
+        stratified_random_sampling,
+        repeated_random_subsampling,
+        leave_one_out_cross_validation,
     ]
 
     data_loader = load_digits
 
-    for f, use_data_loader in funcs:
+    for f in funcs:
         print('running ' + f.__name__ + '() ...')
-        if use_data_loader:
-            f(data_loader)
-        else:
-            f()
+        f(data_loader)
         print()

@@ -228,11 +228,11 @@ def per_class_holdout_split(data_loader):
     _, counts = np.unique(y, return_counts=True)
     Bte = np.zeros(nsamples, dtype=bool)
     
-    i = 0
+    idx = 0
     for count in counts:
         ntestsample = int(count * 0.4)
-        Bte[i:i+ntestsample] = True
-        i += count
+        Bte[idx:idx+ntestsample] = True
+        idx += count
     
     history = train_neuralnet_data(X[~Bte,:], y[~Bte], X[Bte,:], y[Bte],
                                    input_size=64, hidden_size=50, output_size=10, 
@@ -358,7 +358,7 @@ def repeated_random_subsampling(data_loader):
 
 def leave_one_out_cross_validation(data_loader):
 
-    '''LOO (leave-one-out) cross validation, k nearest neighbors on IRIS'''
+    '''LOO (leave-one-out) cross validation, k nearest neighbors on given dataset'''
     # LOO is useul for KNN, because no model training is required
 
     X, y = data_loader(return_X_y=True)

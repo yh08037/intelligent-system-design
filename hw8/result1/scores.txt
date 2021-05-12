@@ -1,0 +1,2 @@
+1 epoch=10 teacc=0.9696
+2 epoch=20 teacc=0.9734

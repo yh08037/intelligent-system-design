@@ -128,12 +128,11 @@ def load_fashion_mnist(normalize=True, flatten=False):
 x_train, t_train = x_train[:5000], t_train[:5000]
 x_test, t_test = x_test[:1000], t_test[:1000]
 
-network = DeepConvNet()  
-network.load_params("params_fm_small_10.pkl")
+network = DeepConvNet()
 
 trainer = Trainer(network, x_train, t_train, x_test, t_test,
                   epochs=10, mini_batch_size=100,
-                  optimizer='Adam', optimizer_param={'lr':0.001},
+                  optimizer='Adam', optimizer_param={'lr':0.002},
                   evaluate_sample_num_per_epoch=1000,
                   verbose=False)
 

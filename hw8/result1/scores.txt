@@ -1,2 +1,4 @@
-1 epoch=10 teacc=0.9696
-2 epoch=20 teacc=0.9734
+1 epoch=10 lr=0.001 teacc=0.9696
+2 epoch=20 lr=0.001 teacc=0.9734
+1 epoch=10 lr=0.002 teacc=0.9763
+1 epoch=10 lr=0.004 teacc=0.9693

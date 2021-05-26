@@ -139,7 +139,7 @@ ax = fig.add_subplot(1, 1, 1)
 ax.scatter(df['x'], df['y'])
 
 for word, pos in df.iterrows():
-    ax.annotate(word, pos)
+    ax.annotate(word, pos, fontsize=20)
 plt.show()
 
 
@@ -196,5 +196,5 @@ ax = fig.add_subplot(1, 1, 1)
 ax.scatter(df['x'], df['y'])
 
 for word, pos in df.iterrows():
-    ax.annotate(word, pos)
+    ax.annotate(word, pos, fontsize=20)
 plt.show()
